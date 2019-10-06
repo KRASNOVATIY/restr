@@ -84,6 +84,18 @@ func handleRepeat(min, max int, r *syntax.Regexp) string {
 	return strings.Join(result, "")
 }
 
+func removeRune(s []int32, a int32) []int32 {
+	index := 0
+	for i, v := range all {
+		if v == a {
+			index = i
+			break
+		}
+	}
+	s[index] = s[len(s)-1]
+	return s[:len(s)-1]
+}
+
 func handleState(r *syntax.Regexp) string {
 	// https://golang.org/pkg/regexp/syntax/#Op
 	// r.Op, r.Rune, r.Min, r.Max, r.Name
@@ -94,6 +106,9 @@ func handleState(r *syntax.Regexp) string {
 		result = string(r.Rune)
 	case syntax.OpAnyChar:
 		result = string(all[rand.Intn(len(all))])
+	case syntax.OpAnyCharNotNL:
+		newAll := removeRune(all, '\n')
+		result = string(newAll[rand.Intn(len(newAll))])
 	case syntax.OpCharClass:
 		charClass := runeSet(r.Rune, true)
 		result = string(charClass[rand.Intn(len(charClass))])
