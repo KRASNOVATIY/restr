@@ -75,6 +75,9 @@ func runeSet(set []int32, ranged bool) []int32 {
 func handleRepeat(min, max int, r *syntax.Regexp) string {
 	var result []string
 	times := max
+	if max == -1 {
+		max = MAXREPEAT
+	}
 	if max-min > 0 {
 		times = rand.Intn(max-min+1) + min // rand.Intn(1) = 0 Always
 	}
