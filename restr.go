@@ -8,10 +8,8 @@ import (
 	"time"
 )
 
-const (
-	// MAXREPEAT - limit for *, + literals
-	MAXREPEAT = 100
-)
+// MaxRepeat - limit for *, + literals
+var MaxRepeat = 100
 
 var whitespace = []int32(" \t\n\r\v\f")
 var asciiLowercase = []int32("abcdefghijklmnopqrstuvwxyz")
@@ -76,7 +74,7 @@ func handleRepeat(min, max int, r *syntax.Regexp) string {
 	var result []string
 	times := max
 	if max == -1 {
-		max = MAXREPEAT
+		max = MaxRepeat
 	}
 	if max-min > 0 {
 		times = rand.Intn(max-min+1) + min // rand.Intn(1) = 0 Always
@@ -126,9 +124,9 @@ func handleState(r *syntax.Regexp) string {
 	case syntax.OpRepeat:
 		result = handleRepeat(r.Min, r.Max, r)
 	case syntax.OpPlus:
-		result = handleRepeat(1, MAXREPEAT, r)
+		result = handleRepeat(1, MaxRepeat, r)
 	case syntax.OpStar:
-		result = handleRepeat(0, MAXREPEAT, r)
+		result = handleRepeat(0, MaxRepeat, r)
 	default:
 	}
 	return result
