@@ -1,0 +1,97 @@
+package restr
+
+import (
+	"strings"
+)
+
+// MarkovGen - Markov model text generator
+type MarkovGen interface {
+	ApplyModel(title, text string, norma uint)
+	Generate(len uint) func() string
+}
+
+type markovGen struct {
+	itemSize uint
+	texts    map[string]string
+	exclude  []rune
+	model    []string
+	_seq     []string
+}
+
+// NewMarkovGen - constructor MarkovGen
+// itemSize >= 2: model state size
+// exclude: array of runes that should be excluded from the model
+func NewMarkovGen(itemSize uint, exclude []rune) MarkovGen {
+	if itemSize <= 1 {
+		panic("the size of the element (state of the text model) must exceed 1")
+	}
+	mg := new(markovGen)
+	mg.itemSize = itemSize
+	mg.exclude = exclude
+	mg.texts = make(map[string]string) // TODO: Add model normalization
+	mg._seq = make([]string, 0)
+	return mg
+}
+
+// ApplyModel - apply model for MarkovGen
+// text: text model contents
+// norma: text multiplier
+func (mg *markovGen) ApplyModel(title, text string, norma uint) {
+	for _, r := range mg.exclude {
+		text = strings.Replace(text, string(r), "", -1)
+	}
+	if len(text) < int(mg.itemSize) {
+		panic("the text size for the model must exceed the size of the model element")
+	}
+	text = strings.Repeat(text, int(norma))
+	mg.texts[title] = text
+
+	ta := strings.Split(text, "")
+	for i := range ta {
+		j := i + int(mg.itemSize)
+		if j > len(text) {
+			continue
+		}
+		item := ta[i:j]
+		mg.model = append(mg.model, strings.Join(item, ""))
+	}
+	for len(mg.model) < 1 {
+		mg.ApplyModel(title, text, norma+1)
+	}
+}
+
+func (mg *markovGen) next(prefix string, slip int) string {
+	mg._seq = []string{}
+	for _, s := range mg.model {
+		if strings.HasPrefix(s[slip:], prefix) {
+			mg._seq = append(mg._seq, s[mg.itemSize-1:])
+		}
+	}
+	for len(mg._seq) < 1 {
+		mg.next(prefix[1:], slip+1)
+	}
+	return RandomString(mg._seq)()
+}
+
+func (mg *markovGen) generate(length uint) string {
+	if len(mg.model) == 0 {
+		panic("model is empty")
+	}
+	start := RandomString(mg.model)()[:mg.itemSize-1]
+	nxt := mg.next(start, 0)
+	word := start + nxt
+
+	for i := 0; i < int(length-mg.itemSize); i++ {
+		nxt = mg.next(word[i+1:], 0)
+		word += nxt
+	}
+
+	return word
+}
+
+// Generate - generate text based on a model with a length of "length"
+func (mg *markovGen) Generate(length uint) func() string {
+	return func() string {
+		return mg.generate(length)
+	}
+}
