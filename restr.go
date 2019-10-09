@@ -82,12 +82,7 @@ func handleCapture(r *syntax.Regexp) string {
 		captureName = r.Name
 		defer func() { captureName = oldName }()
 	}
-
-	newStr := []string{}
-	for _, s := range r.Sub {
-		newStr = append(newStr, handleState(s))
-	}
-	return strings.Join(newStr, "")
+	return handleConcat(r)
 }
 
 func handleConcat(r *syntax.Regexp) string {
@@ -100,17 +95,17 @@ func handleConcat(r *syntax.Regexp) string {
 }
 
 func handleRepeat(min, max int, r *syntax.Regexp) string {
+	if captureName != "" &&
+		registry[captureName] != nil &&
+		(r.Sub[0].Op == syntax.OpAnyChar || r.Sub[0].Op == syntax.OpAnyCharNotNL) {
+		return fixSize(min, max, registry[captureName])
+	}
 	times := max
 	if max == -1 {
 		max = MaxRepeat
 	}
 	if max-min > 0 {
 		times = rand.Intn(max-min+1) + min // rand.Intn(1) = 0 Always
-	}
-	if captureName != "" &&
-		registry[captureName] != nil &&
-		(r.Sub[0].Op == syntax.OpAnyChar || r.Sub[0].Op == syntax.OpAnyCharNotNL) {
-		return fixSize(min, max, registry[captureName])
 	}
 	var result []string
 	for i := 0; i < times; i++ {
@@ -126,6 +121,9 @@ func fixSize(min, max int, fn func() string) string {
 	}
 	for len(word) > max {
 		word = word[:len(word)-1]
+	}
+	if min == 0 {
+		return RandomString([]string{word, ""})()
 	}
 	return word
 }
@@ -168,6 +166,23 @@ func removeRune(s []int32, a rune) []int32 {
 	return s[:len(s)-1]
 }
 
+// named capture
+
+// RandomString - returns a random string from a sequence "array"
+func RandomString(array []string) func() string {
+	return func() string {
+		return array[rand.Intn(len(array))]
+	}
+}
+
+// RegisterName - register data source for Named Capture Group (?P<name>.{10})
+// handles AnyChar and OpAnyCharNotNL literal "." with repeat literals "? * + {}"
+// name: Gapture Group Name
+// fn: generator func, which returns a string
+func RegisterName(name string, fn func() string) {
+	registry[name] = fn
+}
+
 // test
 
 func explain(r *syntax.Regexp, i uint) {
@@ -204,12 +219,12 @@ func test() bool {
 	RegisterName("xname", RandomString([]string{"xa", "xb"}))
 
 	mg := NewMarkovGen(3, []rune{' ', ','})
-	mg.ApplyModel("title1", "Tiny love is my favorite toy, I love it and cannot live without it", 1)
-	mg.ApplyModel("title2", "I am your best friend, I love sweets", 1)
+	mg.ModelApply("title1", "Tiny love is my favorite toy, I love it and cannot live without it", 1)
+	mg.ModelApply("title2", "I am your best friend, I love sweets", 1)
 	RegisterName("yname", mg.Generate(25))
 
 	tests := []string{
-		`(?P<xname>\w{5})\_(?P<xname>.{5} (S|s)(?P<f>\d)) \d{2,5} \:(?P<yname>.{5,10} @R)`,
+		`(?P<xname>\w{5}(?P<t>\+.{5}\+).{5})\_(?P<xname>.+ (S|s)(?P<f>\d)) \d{2,5} \:(?P<yname>.*\+.?\+.+ @R)`,
 		`(?P<xname>\w{5})`,
 		`(?P<xname>(Dd|rr|\dU|.\.){5} .{4} .{3,7})`,
 		`^[\da-zA-Z\-](\&|\*|\^) \d+ ..(?P<xname>\d{2})$`,
@@ -229,22 +244,4 @@ func test() bool {
 		results = append(results, match)
 	}
 	return all(results)
-}
-
-// !published
-
-// RandomString - returns a random string from a sequence "array"
-// array: sequence
-func RandomString(array []string) func() string {
-	return func() string {
-		return array[rand.Intn(len(array))]
-	}
-}
-
-// RegisterName - register data source for Named Capture Group (?P<name>.{10})
-// handles AnyChar literal "."
-// name: Gapture Group Name
-// fn: generator func, which returns a string
-func RegisterName(name string, fn func() string) {
-	registry[name] = fn
 }
