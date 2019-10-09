@@ -6,7 +6,7 @@ import (
 
 // MarkovGen - Markov model text generator
 type MarkovGen interface {
-	ApplyModel(title, text string, norma uint)
+	ModelApply(title, text string, norma uint)
 	Generate(len uint) func() string
 }
 
@@ -33,15 +33,15 @@ func NewMarkovGen(itemSize uint, exclude []rune) MarkovGen {
 	return mg
 }
 
-// ApplyModel - apply model for MarkovGen
+// ModelApply - apply model for MarkovGen
 // text: text model contents
 // norma: text multiplier
-func (mg *markovGen) ApplyModel(title, text string, norma uint) {
+func (mg *markovGen) ModelApply(title, text string, norma uint) {
 	for _, r := range mg.exclude {
 		text = strings.Replace(text, string(r), "", -1)
 	}
 	if len(text) < int(mg.itemSize) {
-		panic("the text size for the model must exceed the size of the model element")
+		panic("the size of the text after the exclusion of characters must exceed the size of the element")
 	}
 	text = strings.Repeat(text, int(norma))
 	mg.texts[title] = text
@@ -56,7 +56,7 @@ func (mg *markovGen) ApplyModel(title, text string, norma uint) {
 		mg.model = append(mg.model, strings.Join(item, ""))
 	}
 	for len(mg.model) < 1 {
-		mg.ApplyModel(title, text, norma+1)
+		mg.ModelApply(title, text, norma+1)
 	}
 }
 
