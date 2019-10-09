@@ -8,9 +8,9 @@ Exported Instances:
 3) fun RandomString - returns a random string from a sequence "array"
 4) fun RegisterName - register data source for Named Capture Group "?P<name>"
 5) type MarkovGen - Markov model text generator
-    5.1) method NewMarkovGen - return new MarkovGen
-    5.2) method ModelApply - expand the model with text-based content
-    5.3) method Generate - generate text based on a model
+    1) method NewMarkovGen - return new MarkovGen
+    2) method ModelApply - expand the model with text-based content
+    3) method Generate - generate text based on a model
 
 ### Usage
 
