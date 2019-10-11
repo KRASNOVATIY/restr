@@ -13,6 +13,7 @@ import (
 // MaxRepeat - limit for * and + literals
 var MaxRepeat = 100
 
+// runes
 var whitespace = []int32(" \t\n\r\v\f")
 var asciiLowercase = []int32("abcdefghijklmnopqrstuvwxyz")
 var asciiUppercase = []int32("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -21,10 +22,50 @@ var digits = []int32("0123456789")
 var hexdigits = append(digits, []int32("abcdefABCDEF")...)
 var octdigits = []int32("01234567")
 var punctuation = []int32("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
-var printable = append(digits, append(asciiLetters, append(whitespace, punctuation...)...)...)
-var _other = []int32{161, 895, 913, 1327, 1329, 1366, 1488, 1514}
-var allChars = append(printable, runeSet(_other, true)...)
+var printable = arraysJoin(whitespace, digits, asciiLetters, punctuation)
 
+// intervals
+var punctuationExtended = []int32{161, 191}
+var latinExtended = []int32{192, 591}
+var ipaAlphabet = []int32{592, 687}
+var spaceModifiers = []int32{688, 767}
+var diacriticalMarks = []int32{768, 879}
+var cyrillic = []int32{1024, 1327}
+var thaana = []int32{1920, 1969}
+var devanagari = []int32{2304, 2431}
+var myanmar = []int32{4096, 4255}
+var hangulJamo = []int32{4352, 4607}
+var canadian = []int32{5120, 5759}
+var runic = []int32{5792, 5880}
+var vedic = []int32{7376, 7417}
+var phonetic = []int32{7424, 7615}
+var currency = []int32{8352, 8383}
+var letterLike = []int32{8448, 8527}
+var number = []int32{8528, 8587}
+var arrows = []int32{8592, 8703}
+var mathematical = []int32{8704, 8959}
+var technical = []int32{8960, 9215}
+var enclosed = []int32{9312, 9471}
+var miscellaneous = []int32{9472, 10239}
+var braille = []int32{10240, 10495}
+var supplemental = []int32{10496, 11007}
+var kangxi = []int32{12032, 12245}
+var hangul = []int32{12593, 12686}
+var cjkExtended = []int32{13312, 19893}
+var cjk = []int32{19968, 40934}
+var egyptian = []int32{77824, 78863}
+var alchemical = []int32{128768, 128883}
+
+// all
+var _other = arraysJoin(
+	punctuationExtended, latinExtended, ipaAlphabet, spaceModifiers,
+	diacriticalMarks, cyrillic, runic, vedic,
+	phonetic, currency, number, arrows, mathematical, technical, egyptian, alchemical,
+)
+var allChars = append(printable, runeSet(_other, true)...)
+var allCharsNotNL = excludingRune(allChars, '\n')
+
+// name capture
 var registry = make(map[string]func() string)
 var captureName = ""
 
@@ -52,8 +93,7 @@ func handleState(r *syntax.Regexp) string {
 	case syntax.OpAnyChar:
 		result = string(allChars[rand.Intn(len(allChars))])
 	case syntax.OpAnyCharNotNL:
-		newAllChars := removeRune(allChars, '\n')
-		result = string(newAllChars[rand.Intn(len(newAllChars))])
+		result = string(allCharsNotNL[rand.Intn(len(allCharsNotNL))])
 	case syntax.OpCharClass:
 		charClass := runeSet(r.Rune, true)
 		result = string(charClass[rand.Intn(len(charClass))])
@@ -154,16 +194,31 @@ func runeSet(set []int32, ranged bool) []int32 {
 	return result
 }
 
-func removeRune(s []int32, a rune) []int32 {
-	index := 0
-	for i, v := range allChars {
+func arraysJoin(args ...[]int32) []int32 {
+	result := []int32{}
+	for _, arr := range args {
+		result = append(result, arr...)
+	}
+	return result
+}
+
+func excludingRune(s []int32, a rune) []int32 {
+	n := make([]int32, len(s))
+	copy(n, s)
+
+	index := -1
+	for i, v := range n {
 		if v == a {
 			index = i
 			break
 		}
 	}
-	s[index] = s[len(s)-1]
-	return s[:len(s)-1]
+	if index == -1 {
+		return n
+	}
+
+	n[index] = n[len(n)-1]
+	return n[:len(n)-1]
 }
 
 // named capture
@@ -189,7 +244,7 @@ func explain(r *syntax.Regexp, i uint) {
 	if r == nil {
 		return
 	}
-	id := fmt.Sprintf("%s", strconv.Itoa(int(i)))
+	id := strconv.Itoa(int(i))
 	if r.Name != "" {
 		id = fmt.Sprintf("%s %s", strconv.Itoa(int(i)), r.Name)
 	}

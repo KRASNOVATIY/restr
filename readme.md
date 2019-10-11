@@ -52,11 +52,11 @@ main() {
 
 output:
 ```txt
-[0]uFT3knvKjUxoxpzKjT_vJncFi6mYbef6gS3RoCKAEIg 5568853724798647844345752909(W)>9999󲛩*f	Uu
-zvbe7ag0ukj282@rr54u.uzuio
-Login: ͉ύѥˉϻȤj»˹Jϐɥ@ԳºɿȤύ̮͇̻ˣʇΙŝżʀɪήGƭӲƗσǀгѣӫǦƗȋʯłחǣϱɿƆ̀̅ɌȚ̈́ӶҒ̡לʘʣ˞ͪןΑɠɆ̦˫ȵəɉ҅юɀĄ}ɿӗɻѷȽҦŹ̬a.nb; Password: ŋז˰ȯՒȔԣӨʬʪïęĕĻь
-Login: friedsotickledb@yandex.ubl; Password: ЖZɇȨӄǟҕŤʿнЌ҉ȱ$ϼǀב
-Login: tohelphimynamei@mail.ejvgb; Password: secretsecretsecret
+1. [0]uFT3knvKjUxoxpzKjT_vJncFi6mYbef6gS3RoCKAEIg 5568853724798647844345752909(W)>9999󲛩*f	Uu
+2. zvbe7ag0ukj282@rr54u.uzuio
+3. Login: ͉ύѥˉϻȤj»˹Jϐɥ@ԳºɿȤύ̮͇̻ˣʇΙŝżʀɪήGƭӲƗσǀгѣӫǦƗȋʯłחǣϱɿƆ̀̅ɌȚ̈́ӶҒ̡לʘʣ˞ͪןΑɠɆ̦˫ȵəɉ҅юɀĄ}ɿӗɻѷȽҦŹ̬a.nb; Password: ŋז˰ȯՒȔԣӨʬʪïęĕĻь
+4. Login: friedsotickledb@yandex.ubl; Password: ЖZɇȨӄǟҕŤʿнЌ҉ȱ$ϼǀב
+5. Login: tohelphimynamei@mail.ejvgb; Password: secretsecretsecret
 ```
 
 ### TODO
