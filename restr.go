@@ -135,15 +135,15 @@ func handleConcat(r *syntax.Regexp) string {
 }
 
 func handleRepeat(min, max int, r *syntax.Regexp) string {
+	if max == -1 {
+		max = MaxRepeat
+	}
 	if captureName != "" &&
 		registry[captureName] != nil &&
 		(r.Sub[0].Op == syntax.OpAnyChar || r.Sub[0].Op == syntax.OpAnyCharNotNL) {
 		return fixSize(min, max, registry[captureName])
 	}
 	times := max
-	if max == -1 {
-		max = MaxRepeat
-	}
 	if max-min > 0 {
 		times = rand.Intn(max-min+1) + min // rand.Intn(1) = 0 Always
 	}
