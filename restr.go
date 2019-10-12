@@ -221,6 +221,48 @@ func excludingRune(s []int32, a rune) []int32 {
 	return n[:len(n)-1]
 }
 
+func excludingRunes(s []int32, a []rune) []int32 { // O(s+a)
+	n := make([]int32, len(s))
+	copy(n, s)
+
+	ri := make(map[rune]int)
+	for _, r := range a {
+		ri[r] = -1
+	}
+
+	counter := len(ri)
+	for i, r := range n {
+		if _, ok := ri[r]; ok {
+			ri[r] = i
+			counter--
+		}
+		if counter == 0 {
+			break
+		}
+	}
+
+	for k, v := range ri {
+		if v == -1 {
+			delete(ri, k)
+		}
+	}
+
+	counter = 0
+	for _, i := range ri {
+		counter++
+		r := n[len(n)-counter]
+		n[i] = r
+		if _, ok := ri[r]; ok {
+			ri[r] = i
+		}
+		if counter == len(ri) {
+			break
+		}
+	}
+
+	return n[:len(n)-counter]
+}
+
 // named capture
 
 // RandomString - returns a random string from a sequence "array"
